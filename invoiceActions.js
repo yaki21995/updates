@@ -1,3 +1,17 @@
+/*
+Automatic Status Update: When invoices are fetched, their payment status is automatically 
+determined based on existing transactions. This aligns with the requirement that the system 
+should give insights into the financial status without manual intervention.
+
+Adding Invoices: When a new invoice is added, the system intelligently checks if the invoice 
+should be marked as "PAID" based on existing transactions. This ensures that the invoice list 
+is always up-to-date and reflects the actual financial situation.
+
+Data Consistency: By centralizing the logic of matching transactions and invoices in the 
+reducer and the action creator, the system maintains consistency. It ensures that the same 
+rules are applied whenever the invoice status is determined or updated.
+*/
+
 export const addInvoice = (invoiceData, transactions) => async (dispatch) => {
   try {
     // Determine if there's a matching transaction for the new invoice
