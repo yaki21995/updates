@@ -12,6 +12,7 @@ const InvoicesPage = () => {
     creationDate: new Date(),
     referenceNumber: `INV-${new Date()} - ${Math.floor(Math.random() * 10000)}`,
   });
+  const { invoices, loading, error } = useSelector(state => state.invoice);
   const transactions = useSelector((state) => state.transaction.transactions); // Get transactions from the state
   const [errors, setErrors] = useState({}); // State to keep track of validation errors
 
@@ -87,6 +88,14 @@ const InvoicesPage = () => {
       console.error("Error submitting the invoice:", error);
       // Handle error
     }
+  }
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
   }
 
   return (
