@@ -24,11 +24,13 @@ const invoiceReducer = (state = initialState, action) => {
         ...state,
         // ----- update here -----
         invoices: updatedInvoices,
+        loading: false,
       };
     case "FETCH_INVOICES_ERROR":
       return {
         ...state,
         invoices: [...state.invoices, action.payload],
+        loading: true,
         error: action.payload,
       };
     // ---- form completion code added here! ----
@@ -37,10 +39,12 @@ const invoiceReducer = (state = initialState, action) => {
         ...state,
         invoices: [...state.invoices, action.payload],
         error: action.payload,
+        loading: false,
       };
     case "ADD_INVOICE_ERROR":
       return {
         ...state,
+        loading: true,
         error: action.payload,
       };
     // ---- end of form completion code added here! ----
