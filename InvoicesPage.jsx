@@ -1,18 +1,18 @@
 import React, { useMemo, useState, useDispatch } from "react"; // Added import for useMemo, useDispatch
 import { useSelector } from "react-redux";
 import { addInvoice } from "../actions/invoiceActions"; // Import addInvoice action
+import { addTransaction } from "../actions/transactionActions";
 
 const InvoicesPage = () => {
   // ... existing state and function definitions
   const [newInvoice, setNewInvoice] = useState({
     client: "",
     amount: "",
+    status: "PAID",
     creationDate: new Date(),
     referenceNumber: `INV-${new Date()} - ${Math.floor(Math.random() * 10000)}`,
   });
   const transactions = useSelector((state) => state.transaction.transactions); // Get transactions from the state
-  const [filter, setFilter] = useState("");
-  const [sortBy, setSortBy] = useState("date");
   const [errors, setErrors] = useState({}); // State to keep track of validation errors
 
   // useMemo to derive unique client names
@@ -60,6 +60,20 @@ const InvoicesPage = () => {
     try {
       // Dispatch an action to add the invoice
       dispatch(addInvoice(newInvoice, transactions));
+      // Check if the invoice is marked as PAID, then add a corresponding transaction
+      if (newInvoice.status === "PAID") {
+        // Create a corresponding transaction for the new invoice
+        const newTransaction = {
+          date: new Date(), // Use the current date for the transaction
+          description: `Payment for Invoice ${newInvoice.referenceNumber}`,
+          referenceNumber: newInvoice.referenceNumber,
+          amount: newInvoice.amount,
+        };
+
+        // Dispatch an action to add the transaction
+        dispatch(addTransaction(newTransaction));
+      }
+
       // Reset form fields and generate a new reference number for the next invoice
       setNewInvoice({
         clientName: "", // Reset client name to empty
@@ -75,39 +89,9 @@ const InvoicesPage = () => {
     }
   }
 
-  // EXTRA FEATURES ----------
-  // useMemo for sorting invoices
-  const sortedInvoices = useMemo(() => {
-    return [...invoices].sort((a, b) => {
-      if (sortBy === "date") {
-        return new Date(b.creationDate) - new Date(a.creationDate); // newest first
-      } else if (sortBy === "amount") {
-        return b.amount - a.amount; // highest first
-      }
-      return 0;
-    });
-  }, [invoices, sortBy]);
-
-  // Function to handle the filtering of invoices
-  const filteredInvoices = useMemo(() => {
-    return sortedInvoices.filter((invoice) => {
-      return invoice.clientName.toLowerCase().includes(filter.toLowerCase());
-    });
-  }, [sortedInvoices, filter]);
-
   return (
     <div>
       <h1>Invoices</h1>
-      <input
-        type="text"
-        placeholder="Filter by client name..."
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
-      />
-      <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-        <option value="date">Sort by Date</option>
-        <option value="amount">Sort by Amount</option>
-      </select>
       <div>
         <form onSubmit={handleSubmit}>
           <select
@@ -116,7 +100,7 @@ const InvoicesPage = () => {
             onChange={handleChange}
             required
           >
-            <option value="" disabled>
+            <option value="" disabled selected>
               Please select a client
             </option>
             {clients.map((name, index) => (
